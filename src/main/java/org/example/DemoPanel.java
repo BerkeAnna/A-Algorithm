@@ -2,6 +2,7 @@ package org.example;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
 
 public class DemoPanel extends JPanel {
     final int maxCol = 15;
@@ -12,11 +13,16 @@ public class DemoPanel extends JPanel {
 
     Node[][] node = new Node[maxCol][maxRow];
     Node startNode, goalNode, currentNode;
+    ArrayList<Node> openList = new ArrayList<>();
+    ArrayList<Node> checkedList = new ArrayList<>();
+    boolean goalReached = false;
 
     public DemoPanel() {
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
         this.setBackground(Color.black);
         this.setLayout(new GridLayout(maxRow, maxCol));
+        this.addKeyListener(new KeyHandler(this));
+        this.setFocusable(true);
 
         int col =0;
         int row = 0;
@@ -92,6 +98,60 @@ public class DemoPanel extends JPanel {
         if(node != startNode && node != goalNode){
            // node.setText("<html> f: " + node.fCost + "<br>g: " + node.gCost + "<br>h: " + node.hCost + "</html>");
             node.setText("<html> f: " + node.fCost + "<br>g: " + node.gCost + "</html>");
+        }
+    }
+
+    public void search(){
+        if(!goalReached){
+            int col = currentNode.col;
+            int row = currentNode.row;
+
+            currentNode.setAsChecked();
+            checkedList.add(currentNode);
+            openList.remove(currentNode);
+
+            if(row-1 >= 0) {
+                openNode(node[col][row - 1]);
+            }
+            if(col-1 >= 0) {
+                openNode(node[col - 1][row]);
+            }
+            if(row+1 <  maxRow) {
+                openNode(node[col][row + 1]);
+            }
+            if(col+1 < maxCol) {
+                openNode(node[col + 1][row]);
+            }
+
+            int bestNodeIndex = 0;
+            int bestNodefCost = 999;
+
+            for(int i = 0; i< openList.size(); i++){
+
+                if(openList.get(i).fCost < bestNodefCost){
+                    bestNodeIndex = i;
+                    bestNodefCost = openList.get(i).fCost;
+                } else if (openList.get(i).fCost == bestNodefCost) {
+                    if(openList.get(i).gCost < openList.get(bestNodeIndex).gCost){
+                        bestNodeIndex = i;
+
+                    }
+                }
+            }
+            currentNode = openList.get(bestNodeIndex);
+
+            if(currentNode == goalNode) {
+                goalReached = true;
+            }
+
+        }
+    }
+
+    private void openNode(Node node){
+        if(!node.open && !node.checked && !node.solid){
+            node.setAsOpen();
+            node.parent = currentNode;
+            openList.add(node);
         }
     }
 }
