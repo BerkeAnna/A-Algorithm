@@ -16,6 +16,7 @@ public class DemoPanel extends JPanel {
     ArrayList<Node> openList = new ArrayList<>();
     ArrayList<Node> checkedList = new ArrayList<>();
     boolean goalReached = false;
+    int step = 0;
 
     public DemoPanel() {
         this.setPreferredSize(new Dimension(screenWidth, screenHeight));
@@ -102,7 +103,7 @@ public class DemoPanel extends JPanel {
     }
 
     public void search(){
-        if(!goalReached){
+        if(!goalReached && step < 300){
             int col = currentNode.col;
             int row = currentNode.row;
 
@@ -145,13 +146,72 @@ public class DemoPanel extends JPanel {
             }
 
         }
+        step++;
     }
 
+    public void autoSearch(){
+        while(!goalReached){
+            int col = currentNode.col;
+            int row = currentNode.row;
+
+            currentNode.setAsChecked();
+            checkedList.add(currentNode);
+            openList.remove(currentNode);
+
+            if(row-1 >= 0) {
+                openNode(node[col][row - 1]);
+            }
+            if(col-1 >= 0) {
+                openNode(node[col - 1][row]);
+            }
+            if(row+1 <  maxRow) {
+                openNode(node[col][row + 1]);
+            }
+            if(col+1 < maxCol) {
+                openNode(node[col + 1][row]);
+            }
+
+            int bestNodeIndex = 0;
+            int bestNodefCost = 999;
+
+            for(int i = 0; i< openList.size(); i++){
+
+                if(openList.get(i).fCost < bestNodefCost){
+                    bestNodeIndex = i;
+                    bestNodefCost = openList.get(i).fCost;
+                } else if (openList.get(i).fCost == bestNodefCost) {
+                    if(openList.get(i).gCost < openList.get(bestNodeIndex).gCost){
+                        bestNodeIndex = i;
+
+                    }
+                }
+            }
+            currentNode = openList.get(bestNodeIndex);
+
+            if(currentNode == goalNode) {
+                goalReached = true;
+                trackThePath();
+            }
+
+        }
+    }
     private void openNode(Node node){
         if(!node.open && !node.checked && !node.solid){
             node.setAsOpen();
             node.parent = currentNode;
             openList.add(node);
+        }
+    }
+
+    private void trackThePath(){
+        Node current = goalNode;
+
+        while(current != startNode ){
+            current = current.parent;
+
+            if(current != startNode){
+                current.setAsPath();
+            }
         }
     }
 }

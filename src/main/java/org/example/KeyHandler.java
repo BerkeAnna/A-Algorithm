@@ -21,6 +21,7 @@ public class KeyHandler implements KeyListener {
         int code = e.getKeyCode();
         if(code == KeyEvent.VK_ENTER){
             dp.search();
+            dp.autoSearch();
         }
     }
 
